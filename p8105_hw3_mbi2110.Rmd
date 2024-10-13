@@ -5,7 +5,7 @@ date: "2024-10-11"
 output: github_document
 ---
 
-# load necessary packages & set for viz
+# load libraries
 
 ```{r}
 library(tidyverse)
@@ -27,4 +27,57 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
+# question 1
+
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+
+names(ny_noaa)
+```
+
+Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.
+
+```{r}
+noaa_df =  
+  janitor::clean_names(ny_noaa) |> 
+  mutate(
+    year = str_sub(date, 1, 4),
+    month = str_sub(date, 6, 7),
+    day = str_sub(date, 9, 10),
+    prcp = as.numeric(prcp) / 100,
+    snow = as.numeric(snow) / 10,
+    snwd = as.numeric(snwd) / 10,
+    tmax = as.numeric(tmax) / 10,
+    tmin = as.numeric(tmin) / 10
+  ) |> 
+  filter(snow >= 0) |> 
+  select(-date)
+
+view(noaa_df)
+```
+
+The units for `r prcp` `r snow` and `r snwd` were converted to cm and the unit for `r tmax` and `r tmin` were converted to degrees C.
+
+For snowfall, what are the most commonly observed values? Why?
+
+```{r}
+
+```
+
+The most commonly observed value for `r snow` is (insert inline R code) because most days it does not snow in New York.
+
+
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+
+```{r}
+noaa_df |> 
+  
+```
+
+
+Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+
 
