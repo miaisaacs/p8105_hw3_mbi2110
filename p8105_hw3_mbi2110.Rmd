@@ -9,24 +9,10 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(viridis)
+library(patchwork)
 ```
 
-```{r}
-knitr::opts_chunk$set(
-	echo = TRUE,
-	warning = FALSE,
-  fig.width = 6,
-  fig.asp = .6,
-  out.width = "90%"
-)
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
-options(
-  ggplot2.continuous.colour = "viridis",
-  ggplot2.continuous.fill = "viridis"
-)
-scale_colour_discrete = scale_colour_viridis_d
-scale_fill_discrete = scale_fill_viridis_d
-```
 
 # question 1
 
@@ -34,8 +20,9 @@ scale_fill_discrete = scale_fill_viridis_d
 library(p8105.datasets)
 data("ny_noaa")
 
-names(ny_noaa)
+summary(ny_noaa)
 ```
+
 
 Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.
 
@@ -43,9 +30,9 @@ Do some data cleaning. Create separate variables for year, month, and day. Ensur
 noaa_df =  
   janitor::clean_names(ny_noaa) |> 
   mutate(
-    year = str_sub(date, 1, 4),
-    month = str_sub(date, 6, 7),
-    day = str_sub(date, 9, 10),
+    year = as.numeric(str_sub(date, 1, 4)),
+    month = as.numeric(str_sub(date, 6, 7)),
+    day = as.numeric(str_sub(date, 9, 10)),
     prcp = as.numeric(prcp) / 100,
     snow = as.numeric(snow) / 10,
     snwd = as.numeric(snwd) / 10,
@@ -58,26 +45,73 @@ noaa_df =
 view(noaa_df)
 ```
 
-The units for `r prcp` `r snow` and `r snwd` were converted to cm and the unit for `r tmax` and `r tmin` were converted to degrees C.
+The units for precipitation, snowfall, and snow depth were converted to cm and the unit for max temp and min temp was converted to degrees C.
 
 For snowfall, what are the most commonly observed values? Why?
 
 ```{r}
+noaa_df |> 
+  ggplot(aes(x = snow)) + 
+  geom_histogram(binwidth = 10) +
+  labs(x = "snowfall (cm)")
 
+mode_snow <- noaa_df |> 
+  count(snow, sort = TRUE) |> 
+  slice(1) |> 
+  pull(snow)
+
+print(mode_snow)
 ```
 
-The most commonly observed value for `r snow` is (insert inline R code) because most days it does not snow in New York.
+The most commonly observed value for snowfall is `r mode_snow` because most days of the year it does not snow in New York.
 
 
 Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
 
 ```{r}
-noaa_df |> 
-  
+noaa_df |>
+  filter(month == 1 | month == 7) |>
+  group_by(year, month) |>
+  summarize(avg_tmax = mean(tmax, na.rm = TRUE)) |>
+  ggplot(aes(x = year, y = avg_tmax, color = avg_tmax)) +
+  geom_point() +
+  facet_grid(. ~ factor(month, levels = c(1, 7), labels = c("January", "July"))) +
+  scale_color_viridis_c(option = "plasma") +
+  labs(y = "average maximum temperature (°C)")
 ```
+
+It is evident from the two-panel plot that the avg max temp in January ranges between -5ºC and 5ºC, whereas the avg max temp in July ranges between 24ºC and 30ºC. There do not appear to be any outliers in either January or July, although the avg max temps do fluctuate significantly across the years.
 
 
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+```{r}
+plot_i <- noaa_df |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_hex() +
+  scale_fill_viridis_c(option = "plasma") +
+  labs(title = "tmax vs. tmin", x = "minimum temperature (°C)", y = "maximum temperature (°C)", fill = "count") +
+  theme_minimal()
+```
+
+```{r}
+plot_ii <- noaa_df |>
+  filter(snow > 0 & snow < 100) |>
+  ggplot(aes(x = factor(year), y = snow, fill = factor(year))) +  
+  geom_violin(alpha = 0.7) +  
+  labs(title = "snowfall distribution by year", 
+       x = "year", 
+       y = "snowfall (cm)", 
+       fill = "year") +
+  scale_fill_viridis_d(option = "plasma") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+```
+
+```{r}
+combined_plot <- plot_i + plot_ii
+print(combined_plot)
+```
 
 
 
