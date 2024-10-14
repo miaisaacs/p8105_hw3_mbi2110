@@ -220,15 +220,49 @@ ggplot(total_activity, aes(x = age, y = total_activity, color = sex)) +
   theme_minimal()
 ```
 
-The above scatterplots show total activity in MIMs across age, education level, and sex.  It is evident that for both females and males across all education levels, total activity decreases as age increases. For those with less than a high school education, total activity displays a sudden increase around age 55 and subsequently decreases around age 60. For those with a high school equivalent education, total activity increases around age 25 and decreases around age 40, with females achieving significantly more MIMs than males. For those with more than a high school education, total activity is more consistent across age with females achieving more MIMs than males. The distributions for total activity have large spreads for each education level and sex, and there appears to be a significant outlier in the "more than high school" group whose total activity is close to 0 MIMs.
+The above scatterplots show total activity in MIMS across age, education level, and sex.  It is evident that for both females and males across all education levels, total activity decreases as age increases. For those with less than a high school education, total activity displays a sudden increase around age 55 and subsequently decreases around age 60. For those with a high school equivalent education, total activity increases around age 25 and decreases around age 40, with females achieving significantly more MIMS than males. For those with more than a high school education, total activity is more consistent across age with females achieving more MIMS than males. The distributions for total activity have large spreads for each education level and sex, and there appears to be a significant outlier in the "more than high school" group whose total activity is close to 0 MIMS.
 
 
 Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
 
 ```{r}
+day_activity <- merged_df |> 
+    pivot_longer(
+    cols = min1:min1440,
+    names_to = "minute",
+    values_to = "mims",
+    names_prefix = "min"
+  )
 
+view(day_activity)
 ```
 
+Used pivot longer to make MIMS data easier to manipulate into 24-hour time courses.
+
+```{r}
+day_activity |> 
+  mutate(
+    minute = as.numeric(minute),
+    hour = (minute - 1) / 60
+  ) |> 
+  group_by(seqn, hour, sex, education) |> 
+  summarize(avg_mims = sum(mims), .groups = "drop") |> 
+  
+  ggplot(aes(x = hour, y = avg_mims, color = sex)) +
+  geom_smooth(se = FALSE) +
+  facet_grid(. ~ education) +
+  labs(
+    title = "24-hour Accelerometer Activity",
+    x = "Hour",
+    y = "Average MIMS",
+    color = "Sex",
+  ) +
+  theme_minimal() +
+  scale_color_viridis_d(option = "plasma") +
+  theme(legend.position = "top")
+```
+
+To achieve this plot, minutes were aggregated into hour time periods and groups were created to get average activity time, allowing for a cleaner and more interpretable plot. The plot displays average MIMS for each hour of the day stratified by education level and sex. Every group shows a decrease in MIMS within the first five hours of the day (12:00am - 5:00am), a gradual increase between 5:00am and 12:30pm, a gradual decrease between 12:30pm and 8:00pm, and a sharper decrease from 8:00pm until the end of the day (midnight). These consistent patterns reflect the typical 24-hour day in which people wake up in the morning, complete their daily tasks throughout the afternoon, and settle down in the evening before going back to sleep. The plot reflects average MIMS, which includes the range of times that people carry out their normal routines. It is interesting to note that the group with less than high school education has the highest MIMS overall, and females have the highest MIMS across all education levels.
 
 
 
