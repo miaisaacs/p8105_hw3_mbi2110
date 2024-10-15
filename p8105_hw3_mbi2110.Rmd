@@ -132,7 +132,7 @@ This dataset contains `r nrow(covar_df)` rows and `r ncol(covar_df)` columns and
 ```{r}
 accel_df =
   read_csv("data/nhanes_accel.csv", na = c("NA", ".", "")) |> 
-  janitor::clean_names() |> 
+  janitor::clean_names()
 
 view(accel_df)
 ```
@@ -263,6 +263,54 @@ day_activity |>
 ```
 
 To achieve this plot, minutes were aggregated into hour time periods and groups were created to get average activity time, allowing for a cleaner and more interpretable plot. The plot displays average MIMS for each hour of the day stratified by education level and sex. Every group shows a decrease in MIMS within the first five hours of the day (12:00am - 5:00am), a gradual increase between 5:00am and 12:30pm, a gradual decrease between 12:30pm and 8:00pm, and a sharper decrease from 8:00pm until the end of the day (midnight). These consistent patterns reflect the typical 24-hour day in which people wake up in the morning, complete their daily tasks throughout the afternoon, and settle down in the evening before going back to sleep. The plot reflects average MIMS, which includes the range of times that people carry out their normal routines. It is interesting to note that the group with less than high school education has the highest MIMS overall, and females have the highest MIMS across all education levels.
+
+
+# question 3
+
+Files contain 1% of all rides with a total duration less than 4 hours in each of four months. Import, clean, and tidy these data, and describe the resulting dataset.
+
+```{r}
+jan2020 =
+  read_csv("data/Jan 2020 Citi.csv") |> 
+  janitor::clean_names()
+
+view(jan2020)
+```
+
+```{r}
+july2020 =
+  read_csv("data/July 2020 Citi.csv") |> 
+  janitor::clean_names()
+
+view(july2020)
+```
+
+```{r}
+jan2024 =
+  read_csv("data/Jan 2024 Citi.csv") |> 
+  janitor::clean_names()
+
+view(jan2024)
+```
+
+```{r}
+july2024 =
+  read_csv("data/July 2024 Citi.csv") |> 
+  janitor::clean_names()
+
+view(july2024)
+```
+
+Produce a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members. Comment on these results.
+
+
+Make a table showing the 5 most popular starting stations for July 2024; include the number of rides originating from these stations.
+
+
+Make a plot to investigate the effects of day of the week, month, and year on median ride duration. This plot can include one or more panels, but should facilitate comparison across all variables of interest. Comment on your observations from this plot.
+
+
+There were relatively few electric Citi Bikes in 2020, but many more are available now. For data in 2024, make a figure that shows the impact of month, membership status, and bike type on the distribution of ride duration. Comment on your results.
 
 
 
