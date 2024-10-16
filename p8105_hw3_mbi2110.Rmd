@@ -272,7 +272,17 @@ Files contain 1% of all rides with a total duration less than 4 hours in each of
 ```{r}
 jan2020 =
   read_csv("data/Jan 2020 Citi.csv") |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  rename(
+    ride_type = rideable_type,
+    start_station = start_station_name,
+    end_station = end_station_name
+  ) |> 
+  mutate(
+    ride_type = str_replace(ride_type, "classic_bike", "classic"),
+    ride_type = str_replace(ride_type, "electric_bike", "electric"),
+    month = "jan2020"
+  )
 
 view(jan2020)
 ```
@@ -280,7 +290,17 @@ view(jan2020)
 ```{r}
 july2020 =
   read_csv("data/July 2020 Citi.csv") |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  rename(
+    ride_type = rideable_type,
+    start_station = start_station_name,
+    end_station = end_station_name
+  )|> 
+  mutate(
+    ride_type = str_replace(ride_type, "classic_bike", "classic"),
+    ride_type = str_replace(ride_type, "electric_bike", "electric"),
+    month = "july2020"
+  )
 
 view(july2020)
 ```
@@ -288,7 +308,17 @@ view(july2020)
 ```{r}
 jan2024 =
   read_csv("data/Jan 2024 Citi.csv") |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  rename(
+    ride_type = rideable_type,
+    start_station = start_station_name,
+    end_station = end_station_name
+  ) |> 
+  mutate(
+    ride_type = str_replace(ride_type, "classic_bike", "classic"),
+    ride_type = str_replace(ride_type, "electric_bike", "electric"),
+    month = "jan2024"
+  )
 
 view(jan2024)
 ```
@@ -296,9 +326,25 @@ view(jan2024)
 ```{r}
 july2024 =
   read_csv("data/July 2024 Citi.csv") |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  rename(
+    ride_type = rideable_type,
+    start_station = start_station_name,
+    end_station = end_station_name
+  ) |> 
+  mutate(
+    ride_type = str_replace(ride_type, "classic_bike", "classic"),
+    ride_type = str_replace(ride_type, "electric_bike", "electric"),
+    month = "july2024"
+  )
 
 view(july2024)
+```
+
+```{r}
+citibike_df <- bind_rows(jan2020, july2020, jan2024, july2024)
+
+view(citibike_df)
 ```
 
 Produce a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members. Comment on these results.
