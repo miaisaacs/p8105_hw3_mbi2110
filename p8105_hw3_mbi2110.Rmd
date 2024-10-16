@@ -349,14 +349,95 @@ view(citibike_df)
 
 Produce a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members. Comment on these results.
 
+```{r}
+total_rides <- citibike_df |> 
+  group_by(month, member_casual) |> 
+  summarise(total_rides = n(), .groups = 'drop') |> 
+  arrange(month, member_casual)
+
+kable(total_rides,  
+      caption = "Total Number of Rides by Month and Rider Type",
+      col.names = c("Month", "Rider Type", "Total Rides"),
+      align = "c")
+```
+
+The table of total rides by month and rider type shows that members were the primary users of Citi Bikes across all four months. There were more total rides in January and July in 2024 than there were in 2020, and there were generally more rides in July than January.
+
 
 Make a table showing the 5 most popular starting stations for July 2024; include the number of rides originating from these stations.
+
+```{r}
+top_stations <- citibike_df |> 
+  filter(month == "july2024") |> 
+  group_by(start_station) |> 
+  summarise(total_rides = n(), .groups = 'drop') |> 
+  arrange(desc(total_rides)) |> 
+  slice_head(n = 5)
+
+kable(top_stations, 
+      caption = "Top 5 Most Popular Starting Stations in July 2024",
+      col.names = c("Starting Station", "Number of Rides"),
+      align = "c")
+```
+
+The table shows that the top five most popular starting stations in July 2024 were Pier 61 at Chelsea Piers, University Place & E 14th St, W 21st St & 6th Ave, West St & Chambers St, and W 31st & 7th Ave.
 
 
 Make a plot to investigate the effects of day of the week, month, and year on median ride duration. This plot can include one or more panels, but should facilitate comparison across all variables of interest. Comment on your observations from this plot.
 
+```{r}
+summary_df <- citibike_df |> 
+  mutate(year = str_sub(month, -4),
+         month = str_sub(month, 1, 3),
+         weekdays = factor(weekdays, 
+                            levels = c("Sunday", "Monday", "Tuesday", "Wednesday", 
+                                       "Thursday", "Friday", "Saturday"))) |> 
+  group_by(year, month, weekdays) |> 
+  summarise(median_duration = median(duration), .groups = 'drop')
+
+ggplot(summary_df, aes(x = weekdays, y = median_duration, group = year, color = year)) +
+  geom_line() +
+  geom_point(size = 2) +
+  facet_wrap(~ year + month, scales = "free_y") +
+  labs(
+    title = "Median Ride Duration by Day of the Week, Month, and Year",
+    x = "Day of the Week",
+    y = "Median Duration (Minutes)",
+    color = "Year-Month"
+  ) +
+  scale_color_viridis_d() + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+This plot displaying median ride duration by day of the week, month, and year reveals some different patterns for each month/year. In both January and July 2020, median ride duration was much higher on Saturdays and Sundays and dipped lower on the weekdays, with overall median duration being greater in July than in January. July 2024 shows a similar pattern to the months in 2020, although the overall median duration is lower than July 2020. Lastly, January 2024 displays a very different pattern in which Sunday-Tuesday have the lowest median duration, which then gradually increases from Wednesday to Saturday.
+
 
 There were relatively few electric Citi Bikes in 2020, but many more are available now. For data in 2024, make a figure that shows the impact of month, membership status, and bike type on the distribution of ride duration. Comment on your results.
+
+```{r}
+rides_2024 <- citibike_df |> 
+  filter(str_sub(month, -4) == "2024", duration <= 100)
+
+ggplot(rides_2024, aes(x = month, y = duration, fill = member_casual)) +
+  geom_violin(trim = TRUE, scale = "width", alpha = 0.7) +
+  facet_grid(ride_type ~ member_casual, scales = "free_y") +
+  labs(
+    title = "Distribution of Ride Duration by Month, Membership Status, and Bike Type (2024)",
+    x = "Month",
+    y = "Ride Duration (Minutes)",
+    fill = "Rider Type"
+  ) +
+  scale_x_discrete(labels = c("jan2024" = "January", "july2024" = "July")) +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+The distributions of ride duration are very consistent across classic and electric bikes in January and July for members. The majority of their rides are between 2-15 minutes with very few rides greater than 25 minutes. The distributions for casual riders vary more significantly between classic and electric bikes--most classic rides range from about 5 minutes to 40 minutes, whereas most electric rides range from about 3 minutes to 25 minutes. The casual users ride durations are fairly consistent between January to July.
+
+
+
 
 
 
